@@ -1,0 +1,34 @@
+name: prime-numbers
+
+on:
+  push:
+    paths: ['math/prime-numbers/**', '.github/workflows/prime-numbers.yml']
+  pull_request:
+    paths: ['math/prime-numbers/**', '.github/workflows/prime-numbers.yml']
+
+defaults:
+  run:
+    working-directory: math/prime-numbers
+
+jobs:
+  test:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-24.04, windows-latest]
+        node: ['22', '24']
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+      - name: Syntax check
+        shell: bash
+        run: node --check primes.js && node --check tests/primes.test.js
+      - name: Tests
+        shell: bash
+        run: npm test
+      - name: Demo prints the article's output
+        shell: bash
+        run: node primes.js | diff --strip-trailing-cr - tests/expected/primes.txt
